@@ -7,35 +7,47 @@ import (
 	rdno_wifi "github.com/jurgen-kluft/rdno_wifi/package"
 )
 
-// GetPackage returns the package object of 'rdno_blinky'
+const (
+	repo_path = "github.com\\jurgen-kluft"
+	repo_name = "rdno_blinky"
+)
+
 func GetPackage() *denv.Package {
-	// Dependencies
+	name := repo_name
+
+	// dependencies
 	cunittestpkg := cunittest.GetPackage()
 	ucorepkg := rdno_core.GetPackage()
 	uwifipkg := rdno_wifi.GetPackage()
 
-	// The main (rdno_blinky) package
-	mainpkg := denv.NewPackage("rdno_blinky")
+	// main package
+	mainpkg := denv.NewPackage(repo_path, repo_name)
 	mainpkg.AddPackage(ucorepkg)
 	mainpkg.AddPackage(uwifipkg)
 
-	// 'rdno_blinky' library
-	mainlib := denv.SetupCppLibProject("rdno_blinky"+"lib", "github.com\\jurgen-kluft\\rdno_blinky")
+	// main library
+	mainlib := denv.SetupCppLibProject(mainpkg, name)
 	mainlib.AddDependencies(uwifipkg.GetMainLib()...)
 	mainlib.AddDependencies(ucorepkg.GetMainLib()...)
 
-	// 'rdno_blinky' application
-	mainapp := denv.SetupCppAppProject("rdno_blinky", "github.com\\jurgen-kluft\\rdno_blinky")
+	// application
+	mainapp := denv.SetupCppAppProject(mainpkg, name)
 	mainapp.AddDependency(mainlib)
 
-	// 'rdno_blinky' unittest project
-	// The unittest project only supports Windows, Mac and Linux
-	maintest := denv.SetupCppTestProjectForDesktop("rdno_blinky"+"test", "github.com\\jurgen-kluft\\rdno_blinky")
-	maintest.AddDependency(mainlib)
+	// test library
+	testlib := denv.SetupCppTestLibProject(mainpkg, name)
+	testlib.AddDependencies(uwifipkg.GetTestLib()...)
+	testlib.AddDependencies(ucorepkg.GetTestLib()...)
+	testlib.AddDependencies(cunittestpkg.GetTestLib()...)
+
+	// unittest project
+	maintest := denv.SetupCppTestProjectForDesktop(mainpkg, name)
 	maintest.AddDependencies(cunittestpkg.GetMainLib()...)
+	maintest.AddDependency(testlib)
 
 	mainpkg.AddMainApp(mainapp)
 	mainpkg.AddMainLib(mainlib)
+	mainpkg.AddTestLib(testlib)
 	mainpkg.AddUnittest(maintest)
 	return mainpkg
 }
