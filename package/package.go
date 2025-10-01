@@ -16,7 +16,6 @@ func GetPackage() *denv.Package {
 
 	// dependencies
 	cunittestpkg := cunittest.GetPackage()
-	//ucorepkg := rdno_core.GetPackage()
 	uwifipkg := rdno_wifi.GetPackage()
 
 	// main package
@@ -25,21 +24,19 @@ func GetPackage() *denv.Package {
 
 	// main library
 	mainlib := denv.SetupCppLibProject(mainpkg, name)
-	//mainlib.AddDependencies(ucorepkg.GetMainLib()...)
-	mainlib.AddDependencies(uwifipkg.GetMainLib()...)
+	mainlib.AddDependencies(uwifipkg.GetMainLib())
 
 	// test library
 	testlib := denv.SetupCppTestLibProject(mainpkg, name)
-	//testlib.AddDependencies(ucorepkg.GetTestLib()...)
-	testlib.AddDependencies(uwifipkg.GetTestLib()...)
+	testlib.AddDependencies(uwifipkg.GetTestLib())
 
 	// unittest project
 	maintest := denv.SetupCppTestProject(mainpkg, name)
-	maintest.AddDependencies(cunittestpkg.GetMainLib()...)
+	maintest.AddDependencies(cunittestpkg.GetMainLib())
 	maintest.AddDependency(testlib)
 
 	// application
-	mainapp := denv.SetupCppAppProject(mainpkg, name, "app")
+	mainapp := denv.SetupCppAppProjectForArduino(mainpkg, name, "app")
 	mainapp.AddDependency(mainlib)
 
 	mainpkg.AddMainApp(mainapp)
